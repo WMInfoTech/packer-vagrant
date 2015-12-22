@@ -144,6 +144,7 @@ runcmd:
   class { 'guest_additions':
     use_repos => true,
     cd_image  => '/home/vagrant/linux.iso',
+    platform  => 'virtualbox',
   }
 
   ssh_authorized_key { 'vagrant-insecure':
