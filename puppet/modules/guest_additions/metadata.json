@@ -1,0 +1,33 @@
+{
+  "name": "pcfens-guest_additions",
+  "version": "0.0.1",
+  "author": "pcfens",
+  "license": "Apache-2.0",
+  "summary": "A module to install and manage guest additions",
+  "source": "https://github.com/pcfens/puppet-guest_additions",
+  "project_page": "https://github.com/pcfens/puppet-guest_additions",
+  "issues_url": "https://github.com/pcfens/puppet-guest_additions/issues",
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "5.0",
+        "6.0",
+        "7.0"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "12.04",
+        "14.04"
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "puppetlabs/apt",
+      "version_requirement": ">=2.0.0 <3.0.0"
+    }
+  ]
+}
