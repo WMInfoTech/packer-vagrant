@@ -1,0 +1,74 @@
+{
+  "variables": {
+    "atlas_username": "{{env `ATLAS_USERNAME`}}",
+    "atlas_name": "{{env `ATLAS_NAME`}}"
+  },
+
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "guest_os_type": "Ubuntu_64",
+      "iso_url": "http://releases.ubuntu.com/14.04.3/ubuntu-14.04.3-server-amd64.iso",
+      "iso_checksum": "a3b345908a826e262f4ea1afeb357fd09ec0558cf34e6c9112cead4bb55ccdfb",
+      "iso_checksum_type": "sha256",
+      "http_directory": "http",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_wait_timeout": "30m",
+      "disk_size": 4096,
+      "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now",
+      "guest_additions_mode": "upload",
+      "guest_additions_path": "linux.iso",
+
+      "headless": "true",
+      "vm_name": "tmpl-trusty",
+      "output_directory":"output-virtualbox-iso-trusty",
+      "boot_command" : [
+        "<esc><esc><enter><wait>",
+        "/install/vmlinuz noapic ",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu/trusty.cfg ",
+        "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
+        "hostname={{ .Name }} <wait>",
+        "fb=false debconf/frontend=noninteractive ",
+        "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
+        "keyboard-configuration/variant=USA console-setup/ask_detect=false ",
+        "initrd=/install/initrd.gz -- <enter>"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "wget http://apt.puppetlabs.com/puppetlabs-release-$(lsb_release -sc).deb",
+        "echo 'vagrant' | sudo -S -E dpkg -i puppetlabs-release-$(lsb_release -sc).deb",
+        "rm puppetlabs-release-$(lsb_release -sc).deb",
+        "echo 'vagrant' | sudo -S -E apt-get update",
+        "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y",
+        "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get install puppet -y"
+      ]
+    },
+    {
+      "type": "puppet-masterless",
+      "manifest_file": "puppet/ubuntu.pp",
+      "module_paths": ["puppet/modules/"],
+      "execute_command": "{{.FacterVars}}{{if .Sudo}} echo 'vagrant' | sudo -S -E {{end}}puppet apply --debug --order=manifest --modulepath='{{.ModulePath}}' {{.ManifestFile}}"
+    }
+  ],
+
+  "post-processors": [
+    [{
+      "type": "vagrant",
+      "compression_level": 9
+    },
+    {
+      "type": "atlas",
+      "only": ["virtualbox-iso"],
+      "artifact": "{{user `atlas_username`}}/{{user `atlas_name`}}",
+      "artifact_type": "vagrant.box",
+      "metadata": {
+          "provider": "virtualbox"
+      }
+    }]
+  ]
+}
