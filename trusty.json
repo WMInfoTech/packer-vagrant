@@ -1,7 +1,7 @@
 {
   "variables": {
-    "atlas_username": "{{env `ATLAS_USERNAME`}}",
-    "atlas_name": "{{env `ATLAS_NAME`}}"
+    "atlas_username": "{{env `ATLAS_BUILD_USERNAME`}}",
+    "atlas_name": "{{env `ATLAS_BUILD_NAME`}}"
   },
 
   "builders": [
@@ -59,7 +59,8 @@
   "post-processors": [
     [{
       "type": "vagrant",
-      "compression_level": 9
+      "compression_level": 9,
+      "keep_input_artifact": false
     },
     {
       "type": "atlas",
