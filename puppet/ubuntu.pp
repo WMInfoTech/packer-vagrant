@@ -6,7 +6,7 @@ $install_packages = [
   'nfs-common',
   'iptables-persistent',
   'git',
-  'cron'
+  'cron',
   # Cloud init
   'cloud-init',
   'cloud-initramfs-growroot',
