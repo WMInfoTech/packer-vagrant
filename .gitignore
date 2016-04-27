@@ -1,2 +1,4 @@
 output-virtualbox-iso-trusty/
+output-virtualbox-iso-xenial/
 packer_cache/
+*.box
