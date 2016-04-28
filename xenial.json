@@ -47,9 +47,9 @@
     {
       "type": "shell",
       "inline": [
-        "wget http://apt.puppetlabs.com/puppetlabs-release-pc1-wily.deb",
-        "echo 'vagrant' | sudo -S -E dpkg -i puppetlabs-release-pc1-wily.deb",
-        "rm puppetlabs-release-pc1-wily.deb",
+        "wget http://apt.puppetlabs.com/puppetlabs-release-pc1-xenial.deb",
+        "echo 'vagrant' | sudo -S -E dpkg -i puppetlabs-release-pc1-xenial.deb",
+        "rm puppetlabs-release-pc1-xenial.deb",
         "echo 'vagrant' | sudo -S -E apt-get update",
         "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y",
         "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get install puppet-agent -y"
