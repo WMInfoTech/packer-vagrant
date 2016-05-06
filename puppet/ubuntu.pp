@@ -7,6 +7,8 @@ $install_packages = [
   'iptables-persistent',
   'git',
   'cron',
+  'bash-completion',
+  'aptitude',
   # Cloud init
   'cloud-init',
   'cloud-initramfs-growroot',
@@ -114,6 +116,22 @@ class { 'unattended_upgrades':
 
 # Virtualbox 5.0 identifies as KVM
 if $::virtual == 'virtualbox' or $::virtual == 'kvm' {
+  class { 'guest_additions':
+    use_repos => true,
+    cd_image  => '/home/vagrant/linux.iso',
+    platform  => 'virtualbox',
+  }
+}
+
+if $::virtual == 'vmware' {
+  package { 'open-vm-tools':
+    ensure => present,
+  }
+}
+
+if $maint_password_hash == undef {
+  $maint_hash = sha1('vagrant')
+
   sudo::conf { 'sudo-vagrant':
     priority => '10',
     content  => 'vagrant ALL=(ALL) NOPASSWD: ALL',
@@ -128,6 +146,13 @@ if $::virtual == 'virtualbox' or $::virtual == 'kvm' {
     shell      => '/bin/bash',
   }
 
+  ssh_authorized_key { 'vagrant-insecure':
+    ensure => present,
+    key    => 'AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ==',
+    user   => 'vagrant',
+    type   => 'ssh-rsa',
+  }
+
   file { '/var/lib/cloud/seed/nocloud-net/user-data':
     ensure  => file,
     require => Exec['create-seed-dir'],
@@ -137,28 +162,10 @@ output: {all: \'| tee -a /var/log/cloud-init-output.log\'}
 users:
   - default
 runcmd:
- - [/sbin/btrfs, filesystem, resize, max, /]
- - [/usr/sbin/userdel, -r, maint]',
+ - [/sbin/btrfs, filesystem, resize, max, /]',
   }
-
-  class { 'guest_additions':
-    use_repos => true,
-    cd_image  => '/home/vagrant/linux.iso',
-    platform  => 'virtualbox',
-  }
-
-  ssh_authorized_key { 'vagrant-insecure':
-    ensure => present,
-    key    => 'AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ==',
-    user   => 'vagrant',
-    type   => 'ssh-rsa',
-  }
-}
-
-if $::virtual == 'vmware' {
-  package { 'open-vm-tools':
-    ensure => present,
-  }
+} else {
+  $maint_hash = $::maint_password_hash
 
   file { '/var/lib/cloud/seed/nocloud-net/user-data':
     ensure  => file,
@@ -198,4 +205,13 @@ runcmd:
     onlyif  => '/bin/grep -q \'sudo:\' /etc/cloud/cloud.cfg',
     require => Package['cloud-init'],
   }
+}
+
+user { 'maint':
+  groups     => ['adm', 'sudo'],
+  password   => $maint_hash,
+  comment    => 'Nix Maintenance User',
+  home       => '/home/maint',
+  managehome => true,
+  shell      => '/bin/bash',
 }
