@@ -129,7 +129,7 @@ if $::virtual == 'vmware' {
   }
 }
 
-if $maint_password_hash == undef {
+if $maint_password_hash == undef || $maint_password_hash == '' {
   $maint_hash = sha1('vagrant')
 
   sudo::conf { 'sudo-vagrant':
