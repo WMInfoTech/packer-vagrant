@@ -164,6 +164,7 @@ if $maint_password_hash == undef or $maint_password_hash == '' {
     content =>
 '#cloud-config
 output: {all: \'| tee -a /var/log/cloud-init-output.log\'}
+package_update: false
 users:
   - default
 runcmd:
