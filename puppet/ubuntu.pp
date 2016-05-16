@@ -104,6 +104,11 @@ augeas { 'ssh_no_dns':
   changes => 'set UseDNS no',
 }
 
+augeas { 'low_vm.swappiness':
+  context => '/files/etc/sysctl.conf',
+  changes => 'set vm.swappiness 7',
+}
+
 class { 'unattended_upgrades':
   origins   => [
     '${distro_id}:${distro_codename}-security',
