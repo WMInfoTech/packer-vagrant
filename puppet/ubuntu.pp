@@ -13,6 +13,7 @@ $install_packages = [
   'cloud-init',
   'cloud-initramfs-growroot',
   'cloud-guest-utils',
+  'apt-transport-https',
 ]
 
 package { $install_packages:
@@ -183,7 +184,8 @@ users:
   - default
 runcmd:
  - [/sbin/btrfs, filesystem, resize, max, /]
- - [/usr/sbin/userdel, -r, vagrant]',
+ - [/usr/sbin/userdel, -r, vagrant],
+ - [/usr/sbin/userdel, -r, packer]',
   }
 
   file { '/var/lib/cloud/seed/nocloud-net/meta-data':
