@@ -159,10 +159,12 @@ if $maint_password_hash == undef or $maint_password_hash == '' {
     type   => 'ssh-rsa',
   }
 
-  file { '/var/lib/cloud/seed/nocloud-net/user-data':
-    ensure  => file,
-    require => Exec['create-seed-dir'],
-    content =>
+  # Only modify cloud-config on AWS
+  if $ec2_metadata == undef or $ec2_metadata == '' {
+    file { '/var/lib/cloud/seed/nocloud-net/user-data':
+      ensure  => file,
+      require => Exec['create-seed-dir'],
+      content =>
 '#cloud-config
 output: {all: \'| tee -a /var/log/cloud-init-output.log\'}
 package_update: false
@@ -170,14 +172,17 @@ users:
   - default
 runcmd:
  - [/sbin/btrfs, filesystem, resize, max, /]',
+    }
   }
 } else {
   $maint_hash = $::maint_password_hash
 
-  file { '/var/lib/cloud/seed/nocloud-net/user-data':
-    ensure  => file,
-    require => Exec['create-seed-dir'],
-    content =>
+  # Only modify cloud-config on AWS
+  if $ec2_metadata == undef or $ec2_metadata == '' {
+    file { '/var/lib/cloud/seed/nocloud-net/user-data':
+      ensure  => file,
+      require => Exec['create-seed-dir'],
+      content =>
 '#cloud-config
 output: {all: \'| tee -a /var/log/cloud-init-output.log\'}
 users:
@@ -186,14 +191,15 @@ runcmd:
  - [/sbin/btrfs, filesystem, resize, max, /]
  - [/usr/sbin/userdel, -r, vagrant],
  - [/usr/sbin/userdel, -r, packer]',
-  }
+    }
 
-  file { '/var/lib/cloud/seed/nocloud-net/meta-data':
-    ensure  => file,
-    require => Exec['create-seed-dir'],
-    content =>
+    file { '/var/lib/cloud/seed/nocloud-net/meta-data':
+      ensure  => file,
+      require => Exec['create-seed-dir'],
+      content =>
   "instance-id: vmware-vm
   local-hostname: template-${::lsbdistcodename}",
+    }
   }
 
   exec { 'change-default-cloud-user':
