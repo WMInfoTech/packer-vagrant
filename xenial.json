@@ -6,6 +6,14 @@
   },
   "builders": [
     {
+      "type": "amazon-ebs",
+      "region": "us-east-1",
+      "instance_type": "t2.micro",
+      "source_ami": "ami-13be557e",
+      "ssh_username": "ubuntu",
+      "ami_name": "wm-ubuntu-xenial-puppet4-{{isotime \"2006-01-02 (15_04_05)\"}}"
+    },
+    {
       "type": "virtualbox-iso",
       "guest_os_type": "Ubuntu_64",
       "iso_url": "http://releases.ubuntu.com/xenial/ubuntu-16.04-server-amd64.iso",
