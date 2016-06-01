@@ -20,16 +20,19 @@ package { $install_packages:
   ensure => installed,
 }
 
-file { '/etc/cloud/cloud.cfg.d/90_dpkg.cfg':
-  ensure  => file,
-  content => 'datasource_list: [ NoCloud ]',
-  require => Package['cloud-init'],
-}
+# Setup some cloud-init stuff if we're not running in AWS
+if $ec2_metadata == undef or $ec2_metadata == '' {
+  file { '/etc/cloud/cloud.cfg.d/90_dpkg.cfg':
+    ensure  => file,
+    content => 'datasource_list: [ NoCloud ]',
+    require => Package['cloud-init'],
+  }
 
-exec { 'create-seed-dir':
-  command => '/bin/mkdir -p /var/lib/cloud/seed/nocloud-net',
-  creates => '/var/lib/cloud/seed/nocloud-net',
-  require => Package['cloud-init'],
+  exec { 'create-seed-dir':
+    command => '/bin/mkdir -p /var/lib/cloud/seed/nocloud-net',
+    creates => '/var/lib/cloud/seed/nocloud-net',
+    require => Package['cloud-init'],
+  }
 }
 
 $packages_to_purge = [
