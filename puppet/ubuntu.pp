@@ -203,18 +203,19 @@ runcmd:
   "instance-id: vmware-vm
   local-hostname: template-${::lsbdistcodename}",
     }
-  }
 
-  exec { 'change-default-cloud-user':
-    command => '/bin/sed -i \'s/name: ubuntu$/name: maint/g\' /etc/cloud/cloud.cfg',
-    unless  => '/bin/grep -qF \'name: maint\' /etc/cloud/cloud.cfg',
-    require => Package['cloud-init'],
-  }
+    exec { 'change-default-cloud-user':
+      command => '/bin/sed -i \'s/name: ubuntu$/name: maint/g\' /etc/cloud/cloud.cfg',
+      unless  => '/bin/grep -qF \'name: maint\' /etc/cloud/cloud.cfg',
+      require => Package['cloud-init'],
+    }
 
-  exec { 'dont-lock-cloud-passwd':
-    command => '/bin/sed -i \'s/lock_passwd: True$/lock_passwd: false/g\' /etc/cloud/cloud.cfg',
-    unless  => '/bin/grep -qF \'lock_passwd: false\' /etc/cloud/cloud.cfg',
-    require => Package['cloud-init'],
+    exec { 'dont-lock-cloud-passwd':
+      command => '/bin/sed -i \'s/lock_passwd: True$/lock_passwd: false/g\' /etc/cloud/cloud.cfg',
+      unless  => '/bin/grep -qF \'lock_passwd: false\' /etc/cloud/cloud.cfg',
+      require => Package['cloud-init'],
+    }
+
   }
 
   exec { 'remove-sudoers-line-from-cloud-config':
