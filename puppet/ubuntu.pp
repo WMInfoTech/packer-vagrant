@@ -33,6 +33,26 @@ if $ec2_metadata == undef or $ec2_metadata == '' {
     creates => '/var/lib/cloud/seed/nocloud-net',
     require => Package['cloud-init'],
   }
+
+  sudo::conf { 'root':
+    content  => 'root ALL=(ALL) ALL',
+  }
+
+  sudo::conf { 'sudo':
+    priority => '10',
+    content  => '%sudo ALL=(ALL) ALL',
+  }
+
+} else {
+  sudo::conf { 'root':
+    content  => 'root ALL=(ALL) NOPASSWD: ALL',
+  }
+
+  sudo::conf { 'sudo':
+    priority => '10',
+    content  => '%sudo ALL=(ALL) NOPASSWD: ALL',
+  }
+
 }
 
 $packages_to_purge = [
@@ -92,15 +112,6 @@ sudo::conf { 'secure-path':
 
 sudo::conf { 'default-timeout':
   content => 'Defaults timestamp_timeout=120',
-}
-
-sudo::conf { 'root':
-  content  => 'root ALL=(ALL) ALL',
-}
-
-sudo::conf { 'sudo':
-  priority => '10',
-  content  => '%sudo ALL=(ALL) ALL',
 }
 
 augeas { 'ssh_no_dns':
@@ -216,13 +227,14 @@ runcmd:
       require => Package['cloud-init'],
     }
 
+    exec { 'remove-sudoers-line-from-cloud-config':
+      command => '/bin/sed -i \'/sudo:/d\' /etc/cloud/cloud.cfg',
+      onlyif  => '/bin/grep -q \'sudo:\' /etc/cloud/cloud.cfg',
+      require => Package['cloud-init'],
+    }
+
   }
 
-  exec { 'remove-sudoers-line-from-cloud-config':
-    command => '/bin/sed -i \'/sudo:/d\' /etc/cloud/cloud.cfg',
-    onlyif  => '/bin/grep -q \'sudo:\' /etc/cloud/cloud.cfg',
-    require => Package['cloud-init'],
-  }
 }
 
 user { 'maint':
