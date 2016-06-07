@@ -14,6 +14,7 @@ $install_packages = [
   'cloud-initramfs-growroot',
   'cloud-guest-utils',
   'apt-transport-https',
+  'ruby',
 ]
 
 package { $install_packages:
@@ -52,7 +53,6 @@ if $ec2_metadata == undef or $ec2_metadata == '' {
     priority => '10',
     content  => '%sudo ALL=(ALL) NOPASSWD: ALL',
   }
-
 }
 
 $packages_to_purge = [
