@@ -1,9 +1,9 @@
 {
   "variables": {
     "atlas_username": "{{env `ATLAS_BUILD_USERNAME`}}",
-    "atlas_name": "{{env `ATLAS_BUILD_NAME`}}"
+    "atlas_name": "{{env `ATLAS_BUILD_NAME`}}",
+    "maint_password_hash": "{{env `MAINT_PASSWORD_HASH`}}"
   },
-
   "builders": [
     {
       "type": "virtualbox-iso",
@@ -34,6 +34,33 @@
         "keyboard-configuration/variant=USA console-setup/ask_detect=false ",
         "initrd=/install/initrd.gz -- <enter>"
       ]
+    },
+     {
+      "type": "vmware-iso",
+      "guest_os_type": "ubuntu-64",
+      "iso_url": "http://releases.ubuntu.com/trusty/ubuntu-14.04.4-server-amd64.iso",
+      "iso_checksum": "07e4bb5569814eab41fafac882ba127893e3ff0bdb7ec931c9b2d040e3e94e7a",
+      "iso_checksum_type": "sha256",
+      "http_directory": "http",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now",
+      "vm_name": "tmpl-trusty",
+      "disk_type_id": "0",
+      "disk_size": 8192,
+      "headless": "true",
+      "output_directory":"output-vmware-iso-trusty",
+      "boot_command" : [
+        "<esc><esc><enter><wait>",
+        "/install/vmlinuz noapic ",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu/trusty.cfg ",
+        "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
+        "hostname={{ .Name }} <wait>",
+        "fb=false debconf/frontend=noninteractive ",
+        "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
+        "keyboard-configuration/variant=USA console-setup/ask_detect=false ",
+        "initrd=/install/initrd.gz -- <enter>"
+      ]
     }
   ],
   "provisioners": [
@@ -52,24 +79,54 @@
       "type": "puppet-masterless",
       "manifest_file": "puppet/ubuntu.pp",
       "module_paths": ["puppet/modules/"],
-      "execute_command": "{{.FacterVars}}{{if .Sudo}} echo 'vagrant' | sudo -S -E {{end}}/opt/puppetlabs/bin/puppet apply --debug --order=manifest --modulepath='{{.ModulePath}}' {{.ManifestFile}}"
+      "facter": {
+        "maint_password_hash": "{{user `maint_password_hash`}}"
+      },
+      "execute_command": "{{if .Sudo}} echo 'vagrant' | sudo -S -E {{end}}{{.FacterVars}} /opt/puppetlabs/bin/puppet apply --order=manifest --modulepath='{{.ModulePath}}' {{.ManifestFile}}"
     }
   ],
-
   "post-processors": [
-    [{
-      "type": "vagrant",
-      "compression_level": 9,
-      "keep_input_artifact": false
-    },
-    {
-      "type": "atlas",
-      "only": ["virtualbox-iso"],
-      "artifact": "{{user `atlas_username`}}/{{user `atlas_name`}}",
-      "artifact_type": "vagrant.box",
-      "metadata": {
-          "provider": "virtualbox"
+    [
+      {
+        "type": "vagrant",
+        "compression_level": 9,
+        "keep_input_artifact": false
+      },
+      {
+        "type": "atlas",
+        "only": ["vmware-iso"],
+        "artifact": "{{user `atlas_username`}}/{{user `atlas_name`}}",
+        "artifact_type": "vagrant.box",
+        "metadata": {
+          "provider": "vmware_desktop"
+        }
+      },
+      {
+        "type": "atlas",
+        "only": ["virtualbox-iso"],
+        "artifact": "{{user `atlas_username`}}/{{user `atlas_name`}}",
+        "artifact_type": "vagrant.box",
+        "metadata": {
+            "provider": "virtualbox"
+        }
       }
-    }]
+    ],
+    [
+      {
+        "type": "compress",
+        "compression_level": 9,
+        "output": "{{.BuildName}}_bundle.tar.gz"
+      },
+      {
+        "type": "atlas",
+        "only": ["vmware-iso"],
+        "artifact": "{{user `atlas_username`}}/{{user `atlas_name`}}",
+        "artifact_type": "vmware.image",
+        "metadata": {
+            "created_at": "{{timestamp}}",
+            "provider": "vmware"
+        }
+      }
+    ]
   ]
 }
