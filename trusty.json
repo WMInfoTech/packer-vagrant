@@ -40,19 +40,19 @@
     {
       "type": "shell",
       "inline": [
-        "wget http://apt.puppetlabs.com/puppetlabs-release-$(lsb_release -sc).deb",
-        "echo 'vagrant' | sudo -S -E dpkg -i puppetlabs-release-$(lsb_release -sc).deb",
-        "rm puppetlabs-release-$(lsb_release -sc).deb",
+        "wget http://apt.puppetlabs.com/puppetlabs-release-pc1-$(lsb_release -sc).deb",
+        "echo 'vagrant' | sudo -S -E dpkg -i puppetlabs-release-pc1-$(lsb_release -sc).deb",
+        "rm puppetlabs-release-pc1-$(lsb_release -sc).deb",
         "echo 'vagrant' | sudo -S -E apt-get update",
         "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y",
-        "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get install puppet -y"
+        "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get install puppet-agent -y"
       ]
     },
     {
       "type": "puppet-masterless",
       "manifest_file": "puppet/ubuntu.pp",
       "module_paths": ["puppet/modules/"],
-      "execute_command": "{{.FacterVars}}{{if .Sudo}} echo 'vagrant' | sudo -S -E {{end}}puppet apply --debug --order=manifest --modulepath='{{.ModulePath}}' {{.ManifestFile}}"
+      "execute_command": "{{.FacterVars}}{{if .Sudo}} echo 'vagrant' | sudo -S -E {{end}}/opt/puppetlabs/bin/puppet apply --debug --order=manifest --modulepath='{{.ModulePath}}' {{.ManifestFile}}"
     }
   ],
 
