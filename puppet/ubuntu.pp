@@ -74,7 +74,7 @@ $packages_to_purge = [
   'mlocate',
   'nano',
   'parted',
-  'plymouth',
+  # 'plymouth',
   'popularity-contest',
   'powermgmt-base',
   'ppp',
