@@ -9,7 +9,7 @@
       "type": "amazon-ebs",
       "region": "us-east-1",
       "instance_type": "t2.micro",
-      "source_ami": "ami-656be372",
+      "source_ami": "ami-cf68e0d8",
       "ssh_username": "ubuntu",
       "ami_name": "wm-ubuntu-xenial-puppet4-{{isotime \"2006-01-02 (15_04_05)\"}}"
     },
