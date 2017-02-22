@@ -202,9 +202,9 @@ output: {all: \'| tee -a /var/log/cloud-init-output.log\'}
 users:
   - default
 runcmd:
- - [/sbin/btrfs, filesystem, resize, max, /]
- - [/usr/sbin/userdel, -r, vagrant],
- - [/usr/sbin/userdel, -r, packer]',
+  - [/sbin/btrfs, filesystem, resize, max, /]
+  - [/usr/sbin/userdel, -r, vagrant],
+  - [/usr/sbin/userdel, -r, packer]',
     }
 
     file { '/var/lib/cloud/seed/nocloud-net/meta-data':
