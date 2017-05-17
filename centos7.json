@@ -1,0 +1,37 @@
+{
+  "variables": {
+    "maint_password_hash": "{{env `MAINT_PASSWORD_HASH`}}"
+  },
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "us-east-1",
+      "instance_type": "t2.micro",
+      "source_ami": "ami-ae7bfdb8",
+      "ssh_username": "centos",
+      "ami_name": "wm-centos7-puppet4-{{isotime \"2006-01-02 (15_04_05)\"}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sudo yum install -y wget",
+        "wget http://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm",
+        "sudo rpm -ivh puppetlabs-release-pc1-el-7.noarch.rpm",
+        "rm puppetlabs-release-pc1-el-7.noarch.rpm",
+        "sudo yum update -y",
+        "sudo yum install puppet-agent -y"
+      ]
+    },
+    {
+      "type": "puppet-masterless",
+      "manifest_file": "puppet/redhat.pp",
+      "module_paths": ["puppet/modules/"],
+      "facter": {
+        "maint_password_hash": "{{user `maint_password_hash`}}"
+      },
+      "execute_command": "{{if .Sudo}} echo 'vagrant' | sudo -S -E {{end}}{{.FacterVars}} /opt/puppetlabs/bin/puppet apply --order=manifest --modulepath='{{.ModulePath}}' {{.ManifestFile}}"
+    }
+  ]
+}
