@@ -5,6 +5,7 @@ $install_packages = [
   'bash-completion',
   # Cloud init
   'cloud-init',
+  'cloud-utils',
   'ruby',
 ]
 
