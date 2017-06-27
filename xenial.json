@@ -2,6 +2,8 @@
   "variables": {
     "atlas_username": "{{env `ATLAS_BUILD_USERNAME`}}",
     "atlas_name": "{{env `ATLAS_BUILD_NAME`}}",
+    "vagrantcloud_token": "{{env `VAGRANTCLOUD_TOKEN`}}",
+    "version": "1.0.{{timestamp}}",
     "maint_password_hash": "{{env `MAINT_PASSWORD_HASH`}}"
   },
   "builders": [
@@ -117,22 +119,10 @@
         "keep_input_artifact": false
       },
       {
-        "type": "atlas",
-        "only": ["vmware-iso"],
-        "artifact": "{{user `atlas_username`}}/{{user `atlas_name`}}",
-        "artifact_type": "vagrant.box",
-        "metadata": {
-          "provider": "vmware_desktop"
-        }
-      },
-      {
-        "type": "atlas",
-        "only": ["virtualbox-iso"],
-        "artifact": "{{user `atlas_username`}}/{{user `atlas_name`}}",
-        "artifact_type": "vagrant.box",
-        "metadata": {
-            "provider": "virtualbox"
-        }
+        "type": "vagrant-cloud",
+        "access_token": "{{user `vagrantcloud_token`}}",
+        "box_tag": "{{user `atlas_username`}}/{{user `atlas_name`}}",
+        "version": "{{user `version`}}"
       }
     ],
     [
