@@ -1,8 +1,5 @@
 {
   "variables": {
-    "atlas_username": "{{env `ATLAS_BUILD_USERNAME`}}",
-    "atlas_name": "{{env `ATLAS_BUILD_NAME`}}",
-    "vagrantcloud_token": "{{env `VAGRANTCLOUD_TOKEN`}}",
     "version": "1.0.{{timestamp}}",
     "maint_password_hash": "{{env `MAINT_PASSWORD_HASH`}}"
   },
@@ -69,9 +66,9 @@
     {
       "type": "shell",
       "inline": [
-        "wget http://apt.puppetlabs.com/puppetlabs-release-pc1-$(lsb_release -sc).deb",
-        "echo 'vagrant' | sudo -S -E dpkg -i puppetlabs-release-pc1-$(lsb_release -sc).deb",
-        "rm puppetlabs-release-pc1-$(lsb_release -sc).deb",
+        "wget http://apt.puppetlabs.com/puppet-release-$(lsb_release -cs).deb",
+        "echo 'vagrant' | sudo -S -E dpkg -i puppet-release-$(lsb_release -cs).deb",
+        "rm puppet-release-$(lsb_release -cs).deb",
         "echo 'vagrant' | sudo -S -E apt-get update",
         "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y",
         "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get install puppet-agent -y"
@@ -84,7 +81,7 @@
       "facter": {
         "maint_password_hash": "{{user `maint_password_hash`}}"
       },
-      "execute_command": "{{if .Sudo}} echo 'vagrant' | sudo -S -E {{end}}{{.FacterVars}} /opt/puppetlabs/bin/puppet apply --order=manifest --modulepath='{{.ModulePath}}' {{.ManifestFile}}"
+      "execute_command": "echo 'vagrant' | sudo -S -E {{.FacterVars}} /opt/puppetlabs/bin/puppet apply --order=manifest --modulepath='{{.ModulePath}}' {{.ManifestFile}}"
     }
   ],
   "post-processors": [
@@ -93,12 +90,6 @@
         "type": "vagrant",
         "compression_level": 9,
         "keep_input_artifact": false
-      },
-      {
-        "type": "vagrant-cloud",
-        "access_token": "{{user `vagrantcloud_token`}}",
-        "box_tag": "{{user `atlas_username`}}/{{user `atlas_name`}}",
-        "version": "{{user `version`}}"
       }
     ],
     [
@@ -106,16 +97,6 @@
         "type": "compress",
         "compression_level": 9,
         "output": "{{.BuildName}}_bundle.tar.gz"
-      },
-      {
-        "type": "atlas",
-        "only": ["vmware-iso"],
-        "artifact": "{{user `atlas_username`}}/{{user `atlas_name`}}",
-        "artifact_type": "vmware.image",
-        "metadata": {
-            "created_at": "{{timestamp}}",
-            "provider": "vmware"
-        }
       }
     ]
   ]

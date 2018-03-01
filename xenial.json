@@ -1,8 +1,5 @@
 {
   "variables": {
-    "atlas_username": "{{env `ATLAS_BUILD_USERNAME`}}",
-    "atlas_name": "{{env `ATLAS_BUILD_NAME`}}",
-    "vagrantcloud_token": "{{env `VAGRANTCLOUD_TOKEN`}}",
     "version": "1.0.{{timestamp}}",
     "maint_password_hash": "{{env `MAINT_PASSWORD_HASH`}}"
   },
@@ -18,8 +15,8 @@
     {
       "type": "virtualbox-iso",
       "guest_os_type": "Ubuntu_64",
-      "iso_url": "http://releases.ubuntu.com/16.04.2/ubuntu-16.04.2-server-amd64.iso",
-      "iso_checksum": "737ae7041212c628de5751d15c3016058b0e833fdc32e7420209b76ca3d0a535",
+      "iso_url": "http://releases.ubuntu.com/16.04.3/ubuntu-16.04.3-server-amd64.iso",
+      "iso_checksum": "a06cd926f5855d4f21fb4bc9978a35312f815fbda0d0ef7fdc846861f4fc4600",
       "iso_checksum_type": "sha256",
       "http_directory": "http",
       "ssh_username": "vagrant",
@@ -55,8 +52,8 @@
     {
       "type": "vmware-iso",
       "guest_os_type": "ubuntu-64",
-      "iso_url": "http://releases.ubuntu.com/16.04.2/ubuntu-16.04.2-server-amd64.iso",
-      "iso_checksum": "737ae7041212c628de5751d15c3016058b0e833fdc32e7420209b76ca3d0a535",
+      "iso_url": "http://releases.ubuntu.com/16.04.3/ubuntu-16.04.3-server-amd64.iso",
+      "iso_checksum": "a06cd926f5855d4f21fb4bc9978a35312f815fbda0d0ef7fdc846861f4fc4600",
       "iso_checksum_type": "sha256",
       "http_directory": "http",
       "ssh_username": "vagrant",
@@ -92,12 +89,14 @@
     {
       "type": "shell",
       "inline": [
-        "wget http://apt.puppetlabs.com/puppetlabs-release-pc1-xenial.deb",
-        "echo 'vagrant' | sudo -S -E dpkg -i puppetlabs-release-pc1-xenial.deb",
-        "rm puppetlabs-release-pc1-xenial.deb",
+        "wget http://apt.puppetlabs.com/puppet-release-xenial.deb",
+        "echo 'vagrant' | sudo -S -E dpkg -i puppet-release-xenial.deb",
+        "rm puppet-release-xenial.deb",
         "echo 'vagrant' | sudo -S -E apt-get update",
         "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y",
-        "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get install puppet-agent -y"
+        "echo 'vagrant' | sudo -S -E DEBIAN_FRONTEND=noninteractive apt-get install puppet-agent -y",
+        "echo 'vagrant' | sudo -S -E mkdir -p /tmp/packer-puppet-masterless",
+        "echo 'vagrant' | sudo -S -E sh -c 'echo \"%sudo ALL=(ALL) NOPASSWD: ALL\" > /etc/sudoers.d/10_sudo'"
       ]
     },
     {
@@ -107,7 +106,7 @@
       "facter": {
         "maint_password_hash": "{{user `maint_password_hash`}}"
       },
-      "execute_command": "{{if .Sudo}} echo 'vagrant' | sudo -S -E {{end}}{{.FacterVars}} /opt/puppetlabs/bin/puppet apply --order=manifest --modulepath='{{.ModulePath}}' {{.ManifestFile}}"
+      "puppet_bin_dir" : "/opt/puppetlabs/bin"
     }
   ],
 
@@ -117,12 +116,6 @@
         "type": "vagrant",
         "compression_level": 9,
         "keep_input_artifact": false
-      },
-      {
-        "type": "vagrant-cloud",
-        "access_token": "{{user `vagrantcloud_token`}}",
-        "box_tag": "{{user `atlas_username`}}/{{user `atlas_name`}}",
-        "version": "{{user `version`}}"
       }
     ],
     [
@@ -130,16 +123,6 @@
         "type": "compress",
         "compression_level": 9,
         "output": "{{.BuildName}}_bundle.tar.gz"
-      },
-      {
-        "type": "atlas",
-        "only": ["vmware-iso"],
-        "artifact": "{{user `atlas_username`}}/{{user `atlas_name`}}",
-        "artifact_type": "vmware.image",
-        "metadata": {
-            "created_at": "{{timestamp}}",
-            "provider": "vmware"
-        }
       }
     ]
   ]

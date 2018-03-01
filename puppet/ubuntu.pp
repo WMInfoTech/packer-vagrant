@@ -136,10 +136,8 @@ class { 'unattended_upgrades':
 
 # Virtualbox 5.0 identifies as KVM
 if $::virtual == 'virtualbox' or $::virtual == 'kvm' {
-  class { 'guest_additions':
-    use_repos => true,
-    cd_image  => '/home/vagrant/linux.iso',
-    platform  => 'virtualbox',
+  package { 'virtualbox-guest-dkms':
+    ensure => present,
   }
 }
 
